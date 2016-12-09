@@ -1,0 +1,40 @@
+{% extends master %}
+
+{% block header %}
+  default layout header
+{% endblock %} 
+
+{% block content %}
+  <div>
+    {% block sidebar %}
+      sidebar
+    {% endblock %}
+   </div>
+
+  <div>
+    {% block main %}
+      main
+    {% endblock %}
+   </div>
+{% endblock %}
+
+{% block footer %}
+  default layout footer
+
+  {% block rich_footer %}
+  rich footer
+  {% endblock %}
+{% endblock %}
+
+{% block page_scripts %}
+  {% comment %}
+    We dont want this layout to use any scripts, so we use a blank block to
+    override the parent block.(p.s. comment block doesn't count)
+
+    But, pay attention that if any child layout extending this layout has a
+    'page_scripts' block defined inside it, that block will be used to override
+    this block first and finally override the page_scripts block in `master`
+    temlate, so the final rendered html will still include `page_scripts` block's
+    content.
+  {% endcomment %}
+{% endblock %}
