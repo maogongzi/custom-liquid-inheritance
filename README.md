@@ -39,4 +39,37 @@ I decided to make yet another wheel which maybe seems somewhat toyish since I'm 
   render_liquid('pages/home', "aaa" => 999, "bbb"=>888)
   ```
 
+7. suppose you are using Hanami framework, you can:
+
+7.1 in any of your View, add a custom `render`:
+
+```ruby
+module Web::Views::Home
+  class Index
+    include Web::View
+
+    def render
+      raw render_liquid('home/index')
+    end
+  end
+end
+```
+
+7.2 in `application.rb`:
+
+```ruby
+require 'liquid'
+require 'custom-liquid-inheritance'
+
+module Liquid
+  Template.file_system = LocalFileSystem.new("#{__dir__}/templates")
+end
+
+...
+
+view.prepare do
+  include Hanami::Helpers
+  include CustomLiquidInheritance::RenderHelper
+end
+```
 You probably need to set Liquid filesystem pointing to your root liquid template folder in case it throws errors like "xxx doesn't support including...".

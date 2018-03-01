@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = "custom-liquid-inheritance"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
   s.authors = ["Dylan Mao"]
   s.email = "maverickpuss@gmail.com"
   s.date = "2016-12-09"
