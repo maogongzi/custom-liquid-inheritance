@@ -7,7 +7,7 @@ module CustomLiquidInheritance
     def initialize(block)
       @block = block
     end
-    
+
     def super
       @block.call_super(@context)
     end
@@ -15,17 +15,17 @@ module CustomLiquidInheritance
 
   class BlockTag < Liquid::Block
     Syntax = /(#{Liquid::QuotedFragment})/
-     
+
     attr_accessor :parent
     attr_reader :name
 
-    def initialize(tag_name, markup, tokens)  
+    def initialize(tag_name, markup, tokens)
       if markup =~ Syntax
         @name = $1
       else
         raise Liquid::SyntaxError.new("Syntax Error in 'block' - Valid syntax: block [name]")
-      end 
- 
+      end
+
       super
     end
 
@@ -36,7 +36,7 @@ module CustomLiquidInheritance
         raise Liquid::SyntaxError.new("Syntax Error in 'block.super' - super '#{name}' block not defined")
       end
     end
-     
+
     def render(context)
       context.stack do
         context['block'] = BlockDrop.new(self)
@@ -52,17 +52,20 @@ module CustomLiquidInheritance
     attr_reader :layout
 
     def initialize(tag_name, markup, tokens)
-  
+
       if markup =~ Syntax
-        @layout = $1
+        layout_expr = $1
+
+        # unwrap quoted string: 'layout' -> layout
+        @layout = Liquid::Expression.parse(layout_expr)
       else
         raise Liquid::SyntaxError.new("Syntax Error in 'extends' - Valid syntax: extends [template]")
-      end 
+      end
 
       super
     end
 
-    def render(ctx) 
+    def render(ctx)
       ''
     end
   end
@@ -87,13 +90,14 @@ module CustomLiquidInheritance
       end
 
       # find nested blocks(note: only blocks contain blocks)
-      # do not use respond_to?(:nodelist), otherwise it will throw a "nil Class" error,
-      # no ideas what happened since I'm not quite experienced.
+      # do not use respond_to?(:nodelist), otherwise it will throw a
+      # "nil Class" error, no ideas what happened since I'm not quite
+      # experienced.
       if node.is_a?(Liquid::Block)
         find_blocks(node, blocks)
       end
     end
-    
+
     blocks
   end
 
@@ -110,7 +114,7 @@ module CustomLiquidInheritance
           parent.nodelist.delete_at(idx + 1)
         end
       end
-   
+
       if node.is_a?(Liquid::Block)
         replace_nodes(node, blocks)
       end
@@ -121,9 +125,9 @@ module CustomLiquidInheritance
   def self.parse_template(tpl_name)
     layout = load_template(tpl_name)
 
-    # extract all defined blocks in child layouts, except the master layout, which
-    # doesn't extend any parent layout, since it will be used as the base nodetree
-    # to deal with the extracted child blocks.
+    # extract all defined blocks in child layouts, except the master layout,
+    # which doesn't extend any parent layout, since it will be used as the
+    # base nodetree to deal with the extracted child blocks.
     # from left to right: second-to-last layout blocks, ... child layout blocks,
     # grandchild layout blocks
     extended_blocks_chain = []
@@ -134,10 +138,11 @@ module CustomLiquidInheritance
       layout = load_template(layout.root.nodelist[0].layout)
     end
 
-    # recursively use child layout's blocks to override same name blocks in master
-    # layout till there isn't any block left behind
-    # NOTE: those stand-alone blocks which neither been defined in master layout
-    # nor been used(as child block) in any child layout's blocks will never be rendered.
+    # recursively use child layout's blocks to override same name blocks in
+    # master layout till there isn't any block left behind
+    # NOTE: those stand-alone blocks which neither been defined in master
+    # layout nor been used(as child block) in any child layout's blocks will
+    # never be rendered.
     extended_blocks_chain.each do |blocks|
       replace_nodes(layout.root, blocks)
     end
@@ -145,8 +150,8 @@ module CustomLiquidInheritance
     layout
   end
 
-  # to use render_liquid in your Sinatra/Padrino Controllers, please include this 
-  # helper.
+  # to use render_liquid in your Sinatra/Padrino Controllers, please include
+  # this helper.
   # e.g.: in Padrino App: helpers CustomLiquidInheritance::RenderHelper
   module RenderHelper
     def render_liquid(tpl_name, options={})
